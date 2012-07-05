@@ -1,0 +1,2 @@
+# Module org.vaadin.codemirror2.CodeMirror2Widgetset
+# RPC service class, partial path of RPC policy file

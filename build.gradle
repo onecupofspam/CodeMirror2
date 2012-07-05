@@ -1,6 +1,6 @@
-artifactGroup = 'org.vaadin.codemirror2'
-archivesBaseNAme = 'codemirror2'
-artifactVersion = '2.2.4'
+artifactGroup = 'org.vaadin.addons'
+archivesBaseName = 'codemirror2'
+artifactVersion = '2.2.5'
 isSnapshot = false
 
 allprojects {
@@ -46,7 +46,6 @@ subprojects {
 }
 
 project(':CodeMirror2-addon') {
-	archivesBaseName = 'codemirror2'
 	apply plugin: 'maven'
 
 	task generatePom {
@@ -76,17 +75,6 @@ project(':CodeMirror2-addon') {
 			from "$buildDir/generatedPoms/pom.xml"
 			into "maven/${project.group}/$archivesBaseName"
 		}		
-
-        copy {
-            from '$buildDir/libs/'
-            into '.'
-            //from(project.zipTree(vaadinJar.absolutePath)) {
-            //    include 'VAADIN/themes/base/**/*'
-            //    include 'VAADIN/themes/reindeer/**/*'
-            //}
-            //into 'build/web'
-        }
-
 	}
 
 	task createZip(type: Zip) {
@@ -112,7 +100,8 @@ project(':CodeMirror2-demo') {
 		compile project(':CodeMirror2-addon')
 	}
 	
-	[jettyRun,jettyRunWar,jettyStop]*.httpPort = 8280
+	//uncomment to set jetty port
+	//[jettyRun,jettyRunWar,jettyStop]*.httpPort = 8280
 
 	task compileWidgetset << {
 		ant.java(classname:'com.google.gwt.dev.Compiler', failOnError: 'true', fork: 'true') 
