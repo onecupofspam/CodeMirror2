@@ -1,6 +1,0 @@
-Manifest-Version: 1.0
-Implementation-Title: CodeMirror2
-Implementation-Version: 2.2.2
-Vaadin-Widgetsets: org.vaadin.codemirror2.CodeMirror2Widgetset
-Class-Path: 
-
