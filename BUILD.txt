@@ -3,7 +3,7 @@ Building instructions.
 Gradle (>=1.0) must be installed.
 Path to the gradle bin directory must be added to the PATH.
 
-Building tasks can be printed using "gradle tasks" in the command line.
+Build tasks can be displayed using "gradle tasks" in the command line.
 To run task type "gradle taskName" in the root directory of the project (the directory where build.gradle is located)
 
 Some useful tasks:
@@ -12,9 +12,7 @@ build - Assembles and run tests
 jettyRunWar - Assembles webbapp into war and runs embedded jetty server with demo app (using 8080 port by default)
 createZip - Create zip archive with assembled addon Jar & Manifest
 
+All of the required dependencies will be downloaded automatically by gradle from maven central, and vaadin addon repositories.
+For example, to assemble addon and run a demo app type "gradle jettyRunWar" in the command line.
 
-All of the required dependencies will be downloaded automatically by gradle from maven central repository.
-
-For example, to assemble addon and run a demo type "gradle jettyRunWar" in the command line.
-
-Addon version can be specified in build.gradle file in variable "artifactVersion" (see actual build.gradle for example).
+Addon version can be specified in a build.gradle file by setting variable "artifactVersion" (look for actual build.gradle for example).
