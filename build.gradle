@@ -1,0 +1,137 @@
+artifactGroup = 'org.vaadin.codemirror2'
+archivesBaseNAme = 'codemirror2'
+artifactVersion = '2.2.4'
+isSnapshot = false
+
+allprojects {
+    group = artifactGroup
+    version = artifactVersion
+}
+
+subprojects {
+	apply plugin: 'java'
+	
+	
+	sharedManifest = manifest {
+		attributes 'Implementation-Title': 'CodeMirror2'
+		attributes 'Implementation-Version': version
+		attributes 'Vaadin-Package-Version': '1'
+        attributes 'Class-Path': ''
+		attributes 'Vaadin-Widgetsets': 'org.vaadin.codemirror2.CodeMirror2Widgetset'
+	}
+	
+	configurations {
+		provided
+		compileWidgetset
+	}
+	
+	repositories {
+		mavenCentral()
+		mavenRepo(urls: 'http://maven.vaadin.com/vaadin-addons')
+	}
+	
+	dependencies {
+		compile('com.vaadin:vaadin:6.7.3')
+        provided('com.google.gwt:gwt-user:2.3.0')
+        provided('com.google.gwt:gwt-dev:2.3.0')
+        provided('javax.validation:validation-api:1.0.0.GA')
+		compileWidgetset('javax.validation:validation-api:1.0.0.GA:sources')
+	}		
+	
+
+	sourceSets {
+		main { compileClasspath += configurations.provided }
+	}
+
+}
+
+project(':CodeMirror2-addon') {
+	archivesBaseName = 'codemirror2'
+	apply plugin: 'maven'
+
+	task generatePom {
+		pom = pom()
+		pom.artifactId = archivesBaseName
+		pom.whenConfigured { pom -> 
+			// Remove vaadin, junit and mockito from the dependency list in the pom
+			pom.dependencies.remove(pom.dependencies.find {dep -> dep.artifactId == 'vaadin'})
+			pom.dependencies.remove(pom.dependencies.find {dep -> dep.artifactId == 'junit'})
+			pom.dependencies.remove(pom.dependencies.find {dep -> dep.artifactId == 'mockito-core'})
+		}
+
+		pomFile = "$buildDir/generatedPoms/pom.xml" as File
+		doFirst {
+			pom.writeTo(pomFile)
+		}
+	}
+
+	jar {
+		dependsOn generatePom
+		// Include sources to jar
+		from sourceSets.main.allJava
+		manifest = project.manifest {
+			from sharedManifest
+		}
+		metaInf {
+			from "$buildDir/generatedPoms/pom.xml"
+			into "maven/${project.group}/$archivesBaseName"
+		}		
+
+        copy {
+            from '$buildDir/libs/'
+            into '.'
+            //from(project.zipTree(vaadinJar.absolutePath)) {
+            //    include 'VAADIN/themes/base/**/*'
+            //    include 'VAADIN/themes/reindeer/**/*'
+            //}
+            //into 'build/web'
+        }
+
+	}
+
+	task createZip(type: Zip) {
+		from jar.outputs.files
+		into('META-INF') {
+			from "$buildDir/tmp/zip/MANIFEST.MF"
+		}
+
+		manifest = project.manifest {
+			attributes 'Vaadin-Addon': jar.outputs.files.collect { File file -> file.name }.join(' ')
+			from sharedManifest
+		}
+		manifest.writeTo("$buildDir/tmp/zip/MANIFEST.MF")
+	}
+	
+}
+
+project(':CodeMirror2-demo') {
+	apply plugin: 'war'
+	apply plugin: 'jetty'
+
+	dependencies {
+		compile project(':CodeMirror2-addon')
+	}
+	
+	[jettyRun,jettyRunWar,jettyStop]*.httpPort = 8280
+
+	task compileWidgetset << {
+		ant.java(classname:'com.google.gwt.dev.Compiler', failOnError: 'true', fork: 'true') 
+		{
+			jvmarg(value: '-Xss1024k')
+			arg(line: '-logLevel INFO')
+			arg(line: '-war src/main/webapp/VAADIN/widgetsets')
+			arg(value: 'org.vaadin.codemirror2.CodeMirror2Widgetset')
+			classpath {
+				pathElement(location: 'src/main/resources')
+				pathElement(path: configurations.compile.asPath)
+				pathElement(path: configurations.compileWidgetset.asPath)
+				pathElement(path: configurations.provided.asPath)
+			}
+		}
+	}
+	
+	war {	
+		dependsOn compileWidgetset
+		archiveName = archivesBaseName + '.war'
+	}
+}
