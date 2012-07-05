@@ -47,7 +47,8 @@ subprojects {
 
 project(':CodeMirror2-addon') {
 	apply plugin: 'maven'
-
+	archivesBaseName = 'codemirror2'
+	
 	task generatePom {
 		pom = pom()
 		pom.artifactId = archivesBaseName
